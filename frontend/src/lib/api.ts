@@ -2,6 +2,7 @@ import type { FundSearchItem, Portfolio, Transaction, TransactionInput } from ".
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
+    cache: "no-store",
     headers: { "Content-Type": "application/json" },
     ...init
   });

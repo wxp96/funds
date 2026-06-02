@@ -165,9 +165,7 @@ async def fetch_quotes(codes: list[str], device_id: str = "funds-web") -> list[d
     missing_estimate_codes = [
         item.get("FCODE")
         for item in rows
-        if item.get("FCODE")
-        and _number(item.get("GSZ")) is None
-        and item.get("PDATE") != expansion_date
+        if item.get("FCODE") and _number(item.get("GSZ")) is None
     ]
     legacy_estimates = await _fetch_legacy_estimates(missing_estimate_codes)
 
@@ -185,9 +183,17 @@ async def fetch_quotes(codes: list[str], device_id: str = "funds-web") -> list[d
                 estimate = legacy_estimate
                 change_rate = _number(legacy.get("gszzl"), change_rate)
                 update_time = legacy.get("gztime") or update_time
+        has_live_estimate = bool(
+            estimate is not None
+            and nav_date
+            and nav_date != "--"
+            and update_time
+            and not str(update_time).startswith(str(nav_date))
+        )
         has_settled_nav = bool(
             nav_date
             and nav_date != "--"
+            and not has_live_estimate
             and (
                 (update_time and str(update_time).startswith(str(nav_date)))
                 or (expansion_date and str(expansion_date).startswith(str(nav_date)))
