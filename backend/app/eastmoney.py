@@ -179,7 +179,9 @@ async def fetch_quotes(codes: list[str], device_id: str = "funds-web") -> list[d
         legacy = legacy_estimates.get(str(item.get("FCODE")))
         if legacy:
             legacy_estimate = _number(legacy.get("gsz"))
-            if legacy_estimate is not None:
+            legacy_nav_date = legacy.get("jzrq")
+            legacy_is_current = not nav_date or not legacy_nav_date or str(legacy_nav_date) >= str(nav_date)
+            if legacy_estimate is not None and legacy_is_current:
                 estimate = legacy_estimate
                 change_rate = _number(legacy.get("gszzl"), change_rate)
                 update_time = legacy.get("gztime") or update_time

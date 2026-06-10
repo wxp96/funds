@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">自选基金</string>
+    <string name="title_activity_main">自选基金</string>
+    <string name="package_name">com.wxp96.funds</string>
+    <string name="custom_url_scheme">com.wxp96.funds</string>
+</resources>

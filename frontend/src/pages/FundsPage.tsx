@@ -1,4 +1,4 @@
-import { Activity, PieChart as PieChartIcon, TrendingUp } from "lucide-react";
+import { Activity, PieChart as PieChartIcon, Plus, TrendingUp, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -48,6 +48,7 @@ export function FundsPage() {
   const [portfolio, setPortfolio] = useState<Portfolio>(initialPortfolio.portfolio);
   const [loading, setLoading] = useState(!initialPortfolio.hasCache);
   const [error, setError] = useState("");
+  const [showAddHolding, setShowAddHolding] = useState(false);
   const requestSeq = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -84,29 +85,37 @@ export function FundsPage() {
 
   return (
     <AppShell active="funds" loading={loading} onRefresh={refresh}>
-      <div className="mb-5">
-        <div>
+      <div className="mb-5 flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-normal">持仓总览</h1>
           <p className="mt-1 text-sm text-slate-400">添加基金持仓，实时查看今日收益、持有收益和仓位明细。</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowAddHolding(true)}
+          className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0d7ff2] px-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/30 md:hidden"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          添加
+        </button>
       </div>
 
       {error ? <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
-      <section className="mb-4">
+      <section className="mb-4 min-w-0">
         <a
           href="/incomes"
           onClick={openIncomes}
           title="查看持仓收益总结"
-          className="block cursor-pointer rounded-xl border border-white/10 bg-white/[0.04] p-6 shadow-xl shadow-black/10 backdrop-blur transition hover:border-blue-400/30 hover:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-blue-400/30"
+          className="block max-w-full cursor-pointer rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/10 backdrop-blur transition hover:border-blue-400/30 hover:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-blue-400/30 sm:p-6"
         >
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-slate-400">总持仓市值</p>
-              <div className="numeric mt-2 text-4xl font-semibold tracking-normal">{money(portfolio.summary.market_value)}</div>
+              <div className="numeric mt-2 break-words text-4xl font-semibold tracking-normal">{money(portfolio.summary.market_value)}</div>
               <p className="mt-2 text-sm text-slate-400">更新时间 {portfolio.summary.updated_at ? portfolio.summary.updated_at.replace("T", " ") : "--"}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3 md:min-w-[420px]">
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 md:min-w-[420px]">
               <HeroMetric icon={Activity} label="今日收益" value={money(portfolio.summary.daily_profit)} sub={percent(portfolio.summary.daily_profit_rate)} className={tone(portfolio.summary.daily_profit)} />
               <HeroMetric icon={TrendingUp} label="持有收益" value={money(portfolio.summary.holding_profit)} sub={percent(portfolio.summary.holding_profit_rate)} className={tone(portfolio.summary.holding_profit)} />
             </div>
@@ -114,12 +123,14 @@ export function FundsPage() {
         </a>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-4">
-          <AddHolding onAdded={refresh} />
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0 space-y-4">
+          <div className="hidden md:block">
+            <AddHolding onAdded={refresh} />
+          </div>
           <HoldingsTable funds={portfolio.funds} loading={loading && portfolio.funds.length === 0} onChanged={refresh} />
         </div>
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/10 backdrop-blur">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-semibold">持仓占比</h2>
@@ -129,7 +140,37 @@ export function FundsPage() {
           </section>
         </aside>
       </div>
+
+      <MobileAddHoldingSheet
+        open={showAddHolding}
+        onClose={() => setShowAddHolding(false)}
+        onAdded={() => {
+          setShowAddHolding(false);
+          refresh();
+        }}
+      />
     </AppShell>
+  );
+}
+
+function MobileAddHoldingSheet({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-add-holding-title">
+      <button type="button" aria-label="关闭添加持仓" onClick={onClose} className="absolute inset-0 cursor-pointer bg-black/55 backdrop-blur-sm" />
+      <div className="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-y-auto rounded-t-2xl border border-white/10 bg-[#101922] p-4 shadow-2xl shadow-black/50">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 id="mobile-add-holding-title" className="text-base font-semibold text-white">添加持仓</h2>
+            <p className="mt-1 text-sm text-slate-400">选择基金并输入当前持仓金额。</p>
+          </div>
+          <button type="button" onClick={onClose} title="关闭" className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400/30">
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+        <AddHolding surface="plain" onAdded={onAdded} />
+      </div>
+    </div>
   );
 }
 

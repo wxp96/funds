@@ -1,4 +1,8 @@
 import type { FundSearchItem, Portfolio, Transaction, TransactionInput } from "../types";
+import { isNativeApp } from "../services/mobileHttp";
+import { localApi } from "../services/localApi";
+
+const useLocalApi = import.meta.env.VITE_DATA_MODE === "local" || isNativeApp();
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -13,7 +17,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export const api = {
+const remoteApi = {
   portfolio: () => request<Portfolio>("/api/portfolio"),
   search: (keyword: string) => request<FundSearchItem[]>(`/api/search?keyword=${encodeURIComponent(keyword)}`),
   addHolding: (code: string, amount: number, profit: number) =>
@@ -29,3 +33,5 @@ export const api = {
   addTransaction: (payload: TransactionInput) => request<Transaction[]>("/api/transactions", { method: "POST", body: JSON.stringify(payload) }),
   deleteTransaction: (id: string) => request<Transaction[]>(`/api/transactions/${id}`, { method: "DELETE" })
 };
+
+export const api = useLocalApi ? localApi : remoteApi;

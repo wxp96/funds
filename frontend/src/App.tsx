@@ -1,6 +1,7 @@
 import { FundDetailPage } from "./pages/FundDetailPage";
 import { FundsPage } from "./pages/FundsPage";
 import { IncomesPage } from "./pages/IncomesPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { useEffect, useState } from "react";
 
 export default function App() {
@@ -25,6 +26,10 @@ export default function App() {
 
   if (path.startsWith("/incomes")) {
     return <IncomesPage />;
+  }
+
+  if (path.startsWith("/settings")) {
+    return <SettingsPage />;
   }
 
   return <FundsPage />;

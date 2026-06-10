@@ -6,9 +6,10 @@ import type { FundSearchItem } from "../types";
 
 type Props = {
   onAdded: () => void;
+  surface?: "card" | "plain";
 };
 
-export function AddHolding({ onAdded }: Props) {
+export function AddHolding({ onAdded, surface = "card" }: Props) {
   const [keyword, setKeyword] = useState("");
   const [results, setResults] = useState<FundSearchItem[]>([]);
   const [selected, setSelected] = useState<FundSearchItem | null>(null);
@@ -27,7 +28,10 @@ export function AddHolding({ onAdded }: Props) {
       setLoading(true);
       api
         .search(query)
-        .then(setResults)
+        .then((items) => {
+          setResults(items);
+          setError("");
+        })
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     }, 280);
@@ -52,10 +56,15 @@ export function AddHolding({ onAdded }: Props) {
     onAdded();
   }
 
+  const surfaceClass =
+    surface === "card"
+      ? "max-w-full rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/10 backdrop-blur"
+      : "max-w-full";
+
   return (
-    <form onSubmit={submit} className="rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/10 backdrop-blur">
-      <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_160px_160px_auto]">
-        <div>
+    <form onSubmit={submit} className={surfaceClass}>
+      <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(260px,1fr)_160px_160px_auto]">
+        <div className="min-w-0">
           <label htmlFor="fund-search" className="mb-1 block text-sm font-medium text-slate-300">
             基金名称或代码
           </label>
@@ -66,6 +75,7 @@ export function AddHolding({ onAdded }: Props) {
               value={selected ? `${selected.name} (${selected.code})` : keyword}
               onChange={(event) => {
                 setSelected(null);
+                setError("");
                 setKeyword(event.target.value);
               }}
               className="h-10 w-full rounded-lg border border-white/10 bg-white/5 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
@@ -87,6 +97,8 @@ export function AddHolding({ onAdded }: Props) {
               ))}
             </div>
           ) : null}
+          {loading ? <p className="mt-2 text-sm text-slate-400">正在搜索...</p> : null}
+          {!loading && keyword.trim().length >= 2 && results.length === 0 && !selected && !error ? <p className="mt-2 text-sm text-slate-500">未找到匹配基金</p> : null}
         </div>
         <div>
           <label htmlFor="amount" className="mb-1 block text-sm font-medium text-slate-300">
@@ -97,6 +109,7 @@ export function AddHolding({ onAdded }: Props) {
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
             type="number"
+            inputMode="decimal"
             min="0"
             step="0.01"
             className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
@@ -111,6 +124,7 @@ export function AddHolding({ onAdded }: Props) {
             value={profit}
             onChange={(event) => setProfit(event.target.value)}
             type="number"
+            inputMode="decimal"
             step="0.01"
             className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
           />
@@ -118,7 +132,7 @@ export function AddHolding({ onAdded }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="mt-6 inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0d7ff2] px-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/30 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-2 inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0d7ff2] px-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/30 disabled:cursor-not-allowed disabled:opacity-60 lg:mt-6 lg:w-auto"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           添加

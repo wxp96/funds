@@ -75,12 +75,14 @@ __pycache__/
 .env*
 !.env.example
 !**/.env.example
+!frontend/.env.mobile
 
 # Local app data and private Codex/session context
 backend/data/*.json
 .codex/
 SESSION_HANDOFF.md
 README_WEB.md
+ANDROID_APP_CONVERSION.md
 
 # Legacy browser-extension source and generated/static pages not used by the Web app
 /src/
@@ -112,6 +114,10 @@ README_WEB.md
 frontend/dist/
 frontend/vite.config.js
 frontend/vite.config.d.ts
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/**/build/
+frontend/android/app/src/main/assets/public/
 dist-zip
 
 # Gatsby files

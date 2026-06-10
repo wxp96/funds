@@ -6,15 +6,22 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:mobile": "tsc --noEmit && vite build --mode mobile",
+    "cap:sync": "npm run build:mobile && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "apk:debug": "npm run cap:sync && cd android && gradle assembleDebug",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
     "@vitejs/plugin-react": "^4.2.1",
     "lucide-react": "^0.468.0",
-    "recharts": "^2.12.7",
-    "vite": "^5.2.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "recharts": "^2.12.7",
+    "vite": "^5.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
